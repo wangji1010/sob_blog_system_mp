@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wwjjbt.sob_blog_system_mp.mapper.TbFriendsMapper">
+
+    <select id="selectAll" resultType="tbFriends">
+        select * from tb_friends order by l_order desc
+    </select>
+
+</mapper>
