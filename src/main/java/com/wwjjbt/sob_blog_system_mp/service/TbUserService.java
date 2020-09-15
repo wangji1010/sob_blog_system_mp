@@ -21,7 +21,7 @@ public interface TbUserService  {
 
     void createCaptcha(HttpServletResponse response,HttpServletRequest request)throws Exception;
 
-    ResponseResult sendEmail(String type,HttpServletRequest request, String emailAddress);
+    ResponseResult sendEmail(String type,HttpServletRequest request, String emailAddress ,String capychaCode);
 
     ResponseResult register(TbUser user, String emailCode,String captchaCode,HttpServletRequest request);
 

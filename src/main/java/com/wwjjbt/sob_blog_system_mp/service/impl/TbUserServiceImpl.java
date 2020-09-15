@@ -30,7 +30,7 @@ import java.util.*;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author wangji
@@ -39,7 +39,7 @@ import java.util.*;
 @Slf4j
 @Service
 @Transactional//事务
-public class TbUserServiceImpl  implements TbUserService {
+public class TbUserServiceImpl implements TbUserService {
 
     //图灵验证码，字体
     public static final int[] CAPTCHA_FONT_TYPES = {Captcha.FONT_1
@@ -146,16 +146,16 @@ public class TbUserServiceImpl  implements TbUserService {
      * 发送图灵验证码
      * */
     @Override
-    public void createCaptcha(HttpServletResponse response,HttpServletRequest request) throws Exception {
+    public void createCaptcha(HttpServletResponse response, HttpServletRequest request) throws Exception {
 //        if (TextUtils.isEmpty(captchaKey) || captchaKey.length() < 13) {
 //            return;
 //        }
         //防止重复创建，占用redis的太多资源，检查上一次的id，如果有的话重复利用
         String lastId = CookieUtils.getCookie(request, Constrants.User.LAST_CAPTCHA_ID);
         String key;
-        if (TextUtils.isEmpty(lastId)){
-            key = idWorker.nextId()+"";
-        }else {
+        if (TextUtils.isEmpty(lastId)) {
+            key = idWorker.nextId() + "";
+        } else {
             key = lastId;
         }
         try {
@@ -184,7 +184,7 @@ public class TbUserServiceImpl  implements TbUserService {
 //        request.getSession().setAttribute("captcha", specCaptcha.text().toLowerCase());
 //          保存到redis
             //把这个id写道cookie里面，用于查询验证码的正确性
-            CookieUtils.setUpCookie(response,Constrants.User.LAST_CAPTCHA_ID,key);
+            CookieUtils.setUpCookie(response, Constrants.User.LAST_CAPTCHA_ID, key);
             redisUtil.set(Constrants.User.KEY_CAPTCHA_CONTENT + key, content, 60 * 10);
             // 输出图片流
             specCaptcha.out(response.getOutputStream());
@@ -204,7 +204,20 @@ public class TbUserServiceImpl  implements TbUserService {
     * 发送邮件验证码
     * */
     @Override
-    public ResponseResult sendEmail(String type, HttpServletRequest request, String emailAddress) {
+    public ResponseResult sendEmail(String type, HttpServletRequest request, String emailAddress, String captchaCode) {
+        //检查人类验证码是否正确
+        //从cookie里面拿到key
+        String captchaId = CookieUtils.getCookie(request, Constrants.User.LAST_CAPTCHA_ID);
+        log.info("captchaId:::=====>>>"+captchaId);
+        String captcha = (String) redisUtil.get(Constrants.User.KEY_CAPTCHA_CONTENT+captchaId);
+        log.info("captcha:::=====>>>"+captcha);
+        if (captcha!=null){
+            if (!captcha.equals(captchaCode)) {
+                return ResponseResult.failed("人类验证码不正确！");
+            }
+        }else {
+            return ResponseResult.failed("人类验证码错误，或者过期");
+        }
 
         if (emailAddress == null) {
             return ResponseResult.failed("邮箱地址不可以为空！");
@@ -425,9 +438,9 @@ public class TbUserServiceImpl  implements TbUserService {
         }*/
 
         QueryWrapper<TbRefreshToken> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_id",userFromDb.getId());
+        wrapper.eq("user_id", userFromDb.getId());
         int delete = refreshTokenMapper.delete(wrapper);
-        log.info("===delete===="+delete);
+        log.info("===delete====" + delete);
         //密码正确，生成token
         String token = JwtTokenUtils.createToken(userFromDb, 1);
         log.info("===============>>>tokenUser==:" + token);
@@ -512,20 +525,20 @@ public class TbUserServiceImpl  implements TbUserService {
             , String userId
             , TbUser user) {
         /*
-        * 从token中解析出来的user为了校验权限
-        * 只有用户才可以修改自己的信息
-        * */
+         * 从token中解析出来的user为了校验权限
+         * 只有用户才可以修改自己的信息
+         * */
         TbUser userFromKey = checkUser(request, response);
         TbUser userFromDb = userMapper.selectById(userFromKey.getId());
 
-        if(userFromDb==null ){
+        if (userFromDb == null) {
             return ResponseResult.ACCOUNT_NOT_LOGIN("账号未登录");
         }
         //判断id是否一致
-        if (!userFromDb.getId().equals(userId)){
+        if (!userFromDb.getId().equals(userId)) {
             return ResponseResult.PERMISSION_FORBID("无权限修改");
         }
-       //可修改
+        //可修改
         //头像
         if (!TextUtils.isEmpty(user.getAvatar())) {
             userFromDb.setAvatar(user.getAvatar());
@@ -533,12 +546,12 @@ public class TbUserServiceImpl  implements TbUserService {
         //用户名，可以为空
         String userName = user.getUserName();
         QueryWrapper<TbUser> wrapper = new QueryWrapper<>();
-        wrapper.eq("user_name",userName);
+        wrapper.eq("user_name", userName);
         //传递进来的userName不为空就根据该userName查询数据库是否重复
-        if (!TextUtils.isEmpty(userName) &&  !userName.equals(userFromKey.getUserName())) {
+        if (!TextUtils.isEmpty(userName) && !userName.equals(userFromKey.getUserName())) {
 
             TbUser userByUserName = userMapper.selectOne(wrapper);
-            if (userByUserName!=null){
+            if (userByUserName != null) {
                 return ResponseResult.failed("该用户名已被注册");
             }
             userFromDb.setUserName(userName);
@@ -551,7 +564,7 @@ public class TbUserServiceImpl  implements TbUserService {
         userMapper.updateById(userFromDb);
         //清除redis里面的token，下一次请求，需要解析token时，会根据当前的用户，创建refresh token
         String tokenKey = CookieUtils.getCookie(request, Constrants.User.COOKIE_TOKE_KEY);
-        redisUtil.del(Constrants.User.KEY_TOKEN+tokenKey);
+        redisUtil.del(Constrants.User.KEY_TOKEN + tokenKey);
         return ResponseResult.success("用户信息修改成功！");
 
     }
@@ -565,7 +578,7 @@ public class TbUserServiceImpl  implements TbUserService {
         //拿到token——key
         String tokenKey = CookieUtils.getCookie(request, Constrants.User.COOKIE_TOKE_KEY);
         TbUser tbUser = parseByTokenKey(tokenKey);
-        if (tbUser==null){
+        if (tbUser == null) {
             //解析出错，mysql查询refreshToken
             QueryWrapper<TbRefreshToken> wrapper = new QueryWrapper<>();
             wrapper.eq("token_key", tokenKey);
@@ -591,107 +604,109 @@ public class TbUserServiceImpl  implements TbUserService {
         }
         return tbUser;
     }
+
     public TbUser parseByTokenKey(String tokenKey) {
         String token = (String) redisUtil.get(Constrants.User.KEY_TOKEN + tokenKey);
         if (token != null) {
             try {
                 TbUser user = JwtTokenUtils.checkToken(token);
                 return user;
-            }catch (Exception e){
+            } catch (Exception e) {
                 return null;
             }
         }
         return null;
 
     }
+
     /*
-    * 根据id删除用户信息
-    * */
+     * 根据id删除用户信息
+     * */
     @Override
     public ResponseResult deleteUserById(String userId, HttpServletRequest request, HttpServletResponse response) {
         TbUser currentUser = checkUser(request, response);
-        if (currentUser==null){
+        if (currentUser == null) {
             return ResponseResult.ACCOUNT_NOT_LOGIN("用户未登录！");
         }
         TbUser userById = userMapper.selectById(currentUser.getId());
 
         //判断角色
-        if (!Constrants.User.ROLE_ADMIN.equals(userById.getRoles())){
+        if (!Constrants.User.ROLE_ADMIN.equals(userById.getRoles())) {
             return ResponseResult.PERMISSION_FORBID("无权限操作");
         }
         //判断删除的用户是否存在
         TbUser user = userMapper.selectById(userId);
-        if (user==null){
+        if (user == null) {
             return ResponseResult.failed("删除的用户不存在！");
         }
-            userMapper.deleteById(userId);
+        userMapper.deleteById(userId);
         return ResponseResult.success("删除成功！");
     }
 
     /*
-    * 查询用户列表
-    * 需要管理员权限
-    * */
+     * 查询用户列表
+     * 需要管理员权限
+     * */
     @Override
-    public ResponseResult getListUser(int page, int size,String userName,String email,HttpServletRequest request, HttpServletResponse response) {
+    public ResponseResult getListUser(int page, int size, String userName, String email, HttpServletRequest request, HttpServletResponse response) {
 
         //判断页码是否是-数
         int checkPage = CheckPageSize.checkPage(page);
         int checkSize = CheckPageSize.checkSize(size);
         QueryWrapper<TbUser> wrapper = new QueryWrapper<>();
-        if (!TextUtils.isEmpty(userName)){
-            wrapper.like("user_name",userName);
+        if (!TextUtils.isEmpty(userName)) {
+            wrapper.like("user_name", userName);
         }
-        if (!TextUtils.isEmpty(email)){
-            wrapper.like("email",email);
+        if (!TextUtils.isEmpty(email)) {
+            wrapper.like("email", email);
         }
         //分页查询
-        Page<TbUser> pageList = new Page<>(checkPage,checkSize);
+        Page<TbUser> pageList = new Page<>(checkPage, checkSize);
         IPage<TbUser> userIPage = userMapper.selectPage(pageList, wrapper);
 
         return ResponseResult.success("获取用户列表成功！").setData(userIPage);
     }
 
     /*
-    * 修改密码
-    * 检查邮箱
-    * */
+     * 修改密码
+     * 检查邮箱
+     * */
     @Override
     public ResponseResult updateUserPassword(String verifyCode, TbUser user) {
         String email = user.getEmail();
         //检查是否填写邮箱
-        if (email.isEmpty()){
+        if (email.isEmpty()) {
             return ResponseResult.failed("邮箱地址不能位空");
         }
         //根据邮箱从redis拿验证码
         String redisVerifyCode = (String) redisUtil.get(Constrants.User.KEY_CODE_CONTENT + email);
         //对比
-        if (TextUtils.isEmpty(redisVerifyCode)||!redisVerifyCode.equals(verifyCode)){
+        if (TextUtils.isEmpty(redisVerifyCode) || !redisVerifyCode.equals(verifyCode)) {
             return ResponseResult.failed("验证码错误");
         }
 
-        userMapper.updatePasswordByEmail(bCryptPasswordEncoder.encode(user.getPassword()),user.getEmail());
+        userMapper.updatePasswordByEmail(bCryptPasswordEncoder.encode(user.getPassword()), user.getEmail());
         redisUtil.del(Constrants.User.KEY_CODE_CONTENT + email);
         return ResponseResult.success("密码更新成功");
     }
 
     /*
-    * 修改邮箱地址
-    * 需登录
-    * */
+     * 修改邮箱地址
+     * 需登录
+     * */
     @Override
-    public ResponseResult updateEmail( String email, String verifyCode,HttpServletRequest request,HttpServletResponse response) {
+    public ResponseResult updateEmail(String email, String verifyCode, HttpServletRequest request, HttpServletResponse response) {
 
         TbUser checkUser = checkUser(request, response);
 //        String tokenKey = CookieUtils.getCookie(request(), Constrants.User.COOKIE_TOKE_KEY);
         //拿到tokenKey
-        if (checkUser==null){
+        if (checkUser == null) {
             return ResponseResult.ACCOUNT_NOT_LOGIN("用户未登录");
         }
 
         //2、对比验证码，确保新邮箱是当前用户的
-        String verifyEmailCode  = (String) redisUtil.get(Constrants.User.KEY_CODE_CONTENT + email);
-        if (verifyEmailCode.isEmpty()){
+        String verifyEmailCode = (String) redisUtil.get(Constrants.User.KEY_CODE_CONTENT + email);
+        if (verifyEmailCode.isEmpty()) {
             return ResponseResult.failed("验证码不正确");
         }
 
@@ -710,26 +725,26 @@ public class TbUserServiceImpl  implements TbUserService {
         HttpServletRequest request = requestAttributes.getRequest();
         HttpServletResponse response = requestAttributes.getResponse();
         String tokenKey = CookieUtils.getCookie(request, Constrants.User.COOKIE_TOKE_KEY);
-        if (tokenKey==null){
+        if (tokenKey == null) {
             return ResponseResult.ACCOUNT_NOT_LOGIN("用户未登录");
         }
         //删除redis
-        redisUtil.del(Constrants.User.KEY_TOKEN+tokenKey);
+        redisUtil.del(Constrants.User.KEY_TOKEN + tokenKey);
         //删除mysqll
         QueryWrapper<TbRefreshToken> wrapper = new QueryWrapper<>();
-        wrapper.eq("token_key",tokenKey);
+        wrapper.eq("token_key", tokenKey);
         refreshTokenMapper.delete(wrapper);
         return ResponseResult.success("退出登录成功！");
     }
 
     /*
-    * 根据token检查用户
-    * */
+     * 根据token检查用户
+     * */
     @Override
-    public ResponseResult parseToken(HttpServletRequest request,HttpServletResponse response) {
+    public ResponseResult parseToken(HttpServletRequest request, HttpServletResponse response) {
 
         TbUser checkUser = checkUser(request, response);
-        if (checkUser==null){
+        if (checkUser == null) {
             return ResponseResult.ACCOUNT_NOT_LOGIN("用户未登录!");
         }
         return ResponseResult.success("获取用户成功").setData(checkUser);
@@ -741,14 +756,14 @@ public class TbUserServiceImpl  implements TbUserService {
         //查询出用户
         TbUser user = userMapper.selectById(userId);
         //判断是否存在
-        if (user==null){
+        if (user == null) {
             return ResponseResult.failed("用户不存在");
         }
         //密码加密
         user.setPassword(bCryptPasswordEncoder.encode(password));
         //处理结果
         userMapper.updateById(user);
-    return ResponseResult.success("密码重置成功！");
+        return ResponseResult.success("密码重置成功！");
     }
 
 

@@ -95,9 +95,12 @@ public class TbUserController {
     修改邮箱(update)：新的邮箱已被注册提示
     * */
     @GetMapping("/verify_code")
-    public ResponseResult sendVerifyCode(@RequestParam("type") String type, @RequestParam("email") String emailAddress, HttpServletRequest request) {
+    public ResponseResult sendVerifyCode(@RequestParam("type") String type
+            , @RequestParam("email") String emailAddress
+            , HttpServletRequest request
+            , @RequestParam("captchaCode") String captchaCode) {
         log.info("============" + emailAddress);
-        return userService.sendEmail(type, request, emailAddress);
+        return userService.sendEmail(type, request, emailAddress ,captchaCode);
     }
 
     /*
