@@ -146,13 +146,20 @@ public class TbUserServiceImpl  implements TbUserService {
      * 发送图灵验证码
      * */
     @Override
-    public void createCaptcha(HttpServletResponse response, String captchaKey) throws Exception {
-        if (TextUtils.isEmpty(captchaKey) || captchaKey.length() < 13) {
-            return;
+    public void createCaptcha(HttpServletResponse response,HttpServletRequest request) throws Exception {
+//        if (TextUtils.isEmpty(captchaKey) || captchaKey.length() < 13) {
+//            return;
+//        }
+        //防止重复创建，占用redis的太多资源，检查上一次的id，如果有的话重复利用
+        String lastId = CookieUtils.getCookie(request, Constrants.User.LAST_CAPTCHA_ID);
+        String key;
+        if (TextUtils.isEmpty(lastId)){
+            key = idWorker.nextId()+"";
+        }else {
+            key = lastId;
         }
-        long key;
         try {
-            key = Long.parseLong(captchaKey);
+//            key = Long.parseLong(captchaKey);
             //处理
             // 设置请求头为输出图片类型
             response.setContentType("image/gif");
@@ -176,6 +183,8 @@ public class TbUserServiceImpl  implements TbUserService {
             // 验证码存入session
 //        request.getSession().setAttribute("captcha", specCaptcha.text().toLowerCase());
 //          保存到redis
+            //把这个id写道cookie里面，用于查询验证码的正确性
+            CookieUtils.setUpCookie(response,Constrants.User.LAST_CAPTCHA_ID,key);
             redisUtil.set(Constrants.User.KEY_CAPTCHA_CONTENT + key, content, 60 * 10);
             // 输出图片流
             specCaptcha.out(response.getOutputStream());
@@ -265,7 +274,7 @@ public class TbUserServiceImpl  implements TbUserService {
         用户注册
     * */
     @Override
-    public ResponseResult register(TbUser user, String emailCode, String captchaCode, String captcha_key, HttpServletRequest request) {
+    public ResponseResult register(TbUser user, String emailCode, String captchaCode, HttpServletRequest request) {
         if (TextUtils.isEmpty(user.getUserName())) {
             return ResponseResult.failed("用户名不能为空");
         }
@@ -306,6 +315,11 @@ public class TbUserServiceImpl  implements TbUserService {
             redisUtil.del(Constrants.User.KEY_CODE_CONTENT + email);
         }
 //        5、检查图灵验证码是否正确
+        //从redis里面拿
+        String captcha_key = CookieUtils.getCookie(request, Constrants.User.LAST_CAPTCHA_ID);
+        if (TextUtils.isEmpty(captcha_key)) {
+            return ResponseResult.failed("请允许保留cookie信息");
+        }
         String captchaVerifyCode = (String) redisUtil.get(Constrants.User.KEY_CAPTCHA_CONTENT + captcha_key);
         if (TextUtils.isEmpty(captchaVerifyCode)) {
             return ResponseResult.failed("人类验证码过期！");
@@ -344,9 +358,10 @@ public class TbUserServiceImpl  implements TbUserService {
      * 用户登录
      * */
     @Override
-    public ResponseResult doLogin(String captcha, String captchaKey, TbUser user) {
+    public ResponseResult doLogin(String captcha, TbUser user) {
         HttpServletRequest request = ResquestAndResponse.getRequest();
         HttpServletResponse response = ResquestAndResponse.getResponse();
+        String captchaKey = CookieUtils.getCookie(request, Constrants.User.LAST_CAPTCHA_ID);
         String capchaValue = (String) redisUtil.get(Constrants.User.KEY_CAPTCHA_CONTENT + captchaKey);
         if (TextUtils.isEmpty(capchaValue)) {
             return ResponseResult.failed("验证码过期");

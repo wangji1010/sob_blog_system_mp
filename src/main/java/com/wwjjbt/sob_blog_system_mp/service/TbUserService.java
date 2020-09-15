@@ -19,13 +19,13 @@ public interface TbUserService  {
 
     ResponseResult initManagerCount(TbUser user, HttpServletRequest request);
 
-    void createCaptcha(HttpServletResponse response, String captchaKey)throws Exception;
+    void createCaptcha(HttpServletResponse response,HttpServletRequest request)throws Exception;
 
     ResponseResult sendEmail(String type,HttpServletRequest request, String emailAddress);
 
-    ResponseResult register(TbUser user, String emailCode,String captchaCode,String captcha_key,HttpServletRequest request);
+    ResponseResult register(TbUser user, String emailCode,String captchaCode,HttpServletRequest request);
 
-    ResponseResult doLogin(String captcha, String captchaKey, TbUser user);
+    ResponseResult doLogin(String captcha,TbUser user);
 
     ResponseResult getUserInfo(String userId);
 

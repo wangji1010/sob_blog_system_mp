@@ -55,12 +55,11 @@ public class TbUserController {
     public ResponseResult register(@RequestBody TbUser user
             , @RequestParam("email_code") String emailCode
             , @RequestParam("captcha_code") String captchaCode
-            , @RequestParam("captcha_key") String captcha_key
             , HttpServletRequest request
     ) {
 
 
-        return userService.register(user, emailCode, captchaCode, captcha_key, request);
+        return userService.register(user, emailCode, captchaCode, request);
     }
 
     /*
@@ -71,22 +70,21 @@ public class TbUserController {
      *   3、图灵验证码
      *   4、图灵验证码key
      * */
-    @PostMapping("/login/{captcha}/{captchaKey}")
+    @PostMapping("/login/{captcha}")
     public ResponseResult login(@PathVariable("captcha") String captcha
-            , @PathVariable("captchaKey") String captchaKey
             , @RequestBody TbUser user
             ) {
 
-        return userService.doLogin(captcha, captchaKey, user);
+        return userService.doLogin(captcha, user);
     }
 
     /*
      * 获取图灵验证码
      * */
     @GetMapping("/captcha")
-    public void getCaptcha(@RequestParam("captcha_key") String captchaKey, HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public void getCaptcha(HttpServletResponse response,HttpServletRequest request) throws Exception {
 
-        userService.createCaptcha(response, captchaKey);
+        userService.createCaptcha(response,request);
 
     }
 

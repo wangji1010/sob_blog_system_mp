@@ -15,6 +15,7 @@ public interface Constrants {
         String KEY_EMAIL_SEND_IP = "key_email_send_ip";
         String KEY_EMAIL_SEND_ADDRESS = "key_email_send_address";
         String KEY_TOKEN = "key_token_";
+        String LAST_CAPTCHA_ID = "l_c_i";
         String COOKIE_TOKE_KEY = "blog_token";
     }
     interface Settings{
