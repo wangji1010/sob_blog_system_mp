@@ -50,4 +50,6 @@ public interface TbUserService  {
     ResponseResult parseToken(HttpServletRequest request,HttpServletResponse response);
 
     ResponseResult resetPassword(String userId, String password);
+
+    ResponseResult checkEmailCode(String emailAddress, String emailCode, String captchaCode,HttpServletRequest request);
 }

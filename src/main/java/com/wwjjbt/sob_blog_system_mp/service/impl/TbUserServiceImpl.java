@@ -766,5 +766,27 @@ public class TbUserServiceImpl implements TbUserService {
         return ResponseResult.success("密码重置成功！");
     }
 
+    /*
+    *
+    * */
+    @Override
+    public ResponseResult checkEmailCode(String emailAddress, String emailCode
+            , String captchaCode,HttpServletRequest request) {
+        //检查验证码,从cookie中拿到captchaID通过id从redis中拿到验证码
+        String captchaId = CookieUtils.getCookie(request, Constrants.User.LAST_CAPTCHA_ID);
+
+        String captcha = (String) redisUtil.get(Constrants.User.KEY_CAPTCHA_CONTENT + captchaId);
+        log.info("====<><><>"+captcha);
+        if (!captcha.equals(captchaCode)){
+            return ResponseResult.failed("人类验证码不正确");
+        }
+        //检查邮箱code,拿到邮箱验证码
+        String redisVerifyCode = (String) redisUtil.get(Constrants.User.KEY_CODE_CONTENT + emailAddress);
+        if (!redisVerifyCode.equals(emailCode)){
+            return ResponseResult.failed("邮箱验证码不正确");
+        }
+        return ResponseResult.success("验证码正确");
+    }
+
 
 }

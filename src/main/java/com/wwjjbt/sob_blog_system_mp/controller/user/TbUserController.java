@@ -49,6 +49,17 @@ public class TbUserController {
     }
 
     /*
+    * 检查邮箱验证码
+    * */
+    @GetMapping("/check_email_code")
+    public ResponseResult checkEmailCode(@RequestParam("emailAddress")String emailAddress
+            ,@RequestParam("emailCode")String emailCode
+            ,@RequestParam("captchaCode")String captchaCode
+            ,HttpServletRequest request){
+        return userService.checkEmailCode(emailAddress,emailCode,captchaCode,request);
+    }
+
+    /*
      * 注册
      * */
     @PostMapping("/register")
@@ -122,8 +133,6 @@ public class TbUserController {
     * */
     @PutMapping("/password/{verifyCode}")
     public ResponseResult updatePassword(@PathVariable("verifyCode") String verifyCode, @RequestBody TbUser user) {
-
-
         return userService.updateUserPassword(verifyCode,user);
     }
 
