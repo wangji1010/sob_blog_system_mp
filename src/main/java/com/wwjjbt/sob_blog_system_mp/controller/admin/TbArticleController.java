@@ -66,7 +66,7 @@ public class TbArticleController {
      * */
     @PreAuthorize("@permission.admin()")
     @GetMapping("/{articleId}")
-    public ResponseResult getArticle(@PathVariable("articleId") String articleId){
+    public ResponseResult getArticle(@PathVariable("articleId") String articleId) throws IOException {
 
         return articleService.getArticleById(articleId);
     }

@@ -5,6 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 import com.wwjjbt.sob_blog_system_mp.mapper.TbArticleMapper;
 import com.wwjjbt.sob_blog_system_mp.mapper.TbCategoriesMapper;
 import com.wwjjbt.sob_blog_system_mp.mapper.TbSettingsMapper;
@@ -16,6 +20,7 @@ import com.wwjjbt.sob_blog_system_mp.pojo.TbUser;
 import com.wwjjbt.sob_blog_system_mp.service.TbUserService;
 import com.wwjjbt.sob_blog_system_mp.utils.*;
 import io.jsonwebtoken.Claims;
+import org.apache.pdfbox.pdmodel.interactive.digitalsignature.PDSeedValueMDP;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
@@ -41,6 +46,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.DigestUtils;
+import sun.applet.Main;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -274,6 +280,25 @@ public class SobBlogSystemMpApplicationTests {
         DeleteRequest ceshi1 = new DeleteRequest("ceshi1", "1280412877336870912");
         DeleteResponse delete = client.delete(ceshi1, RequestOptions.DEFAULT);
         System.out.println(delete.status());
+    }
+
+    @Test
+    public void testMDtoHTML(){
+
+        MdtoHtml mdtoHtml = new MdtoHtml();
+        mdtoHtml.md_to_ht("");
+                /*String md = "";
+                MutableDataSet options = new MutableDataSet();
+
+                Parser parser = Parser.builder(options).build();
+                HtmlRenderer renderer = HtmlRenderer.builder(options).build();
+
+                // You can re-use parser and renderer instances
+                Node document = parser.parse(md);
+                String html = renderer.render(document);  // "<p>This is <em>Sparta</em></p>\n"
+                System.out.println(html);*/
+
+
     }
 
 }

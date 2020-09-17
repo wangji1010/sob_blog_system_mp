@@ -4,6 +4,15 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.vladsch.flexmark.ext.jekyll.tag.JekyllTagExtension;
+import com.vladsch.flexmark.ext.tables.TablesExtension;
+import com.vladsch.flexmark.ext.toc.SimTocExtension;
+import com.vladsch.flexmark.ext.toc.TocExtension;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.ast.Document;
+import com.vladsch.flexmark.util.ast.Node;
+import com.vladsch.flexmark.util.data.MutableDataSet;
 import com.wwjjbt.sob_blog_system_mp.mapper.TbArticleMapper;
 import com.wwjjbt.sob_blog_system_mp.mapper.TbLabelsMapper;
 import com.wwjjbt.sob_blog_system_mp.pojo.TbArticle;
@@ -24,6 +33,7 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.jsoup.Jsoup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -92,7 +102,6 @@ public class TbArticleServiceImpl implements TbArticleService {
     @Override
     public ResponseResult addArticle(HttpServletRequest request, HttpServletResponse response, TbArticle article) throws IOException {
 
-
         //检查用户，获取用户对象
         TbUser user = userService.checkUser(request, response);
         //检查数据
@@ -130,8 +139,8 @@ public class TbArticleServiceImpl implements TbArticleService {
             if (summary.length() > Constrants.Article.SUMMARY_MAX_LENGTH) {
                 return ResponseResult.failed("摘要不得超过" + Constrants.Article.SUMMARY_MAX_LENGTH + "个字符");
             }
-            String content = article.getContent();
-            if (TextUtils.isEmpty(content)) {
+            String content1 = article.getContent();
+            if (TextUtils.isEmpty(content1)) {
                 return ResponseResult.failed("内容不能为空");
             }
             String labels = article.getLabels();
@@ -265,7 +274,7 @@ public class TbArticleServiceImpl implements TbArticleService {
     * 获取文章单挑记录
     * */
     @Override
-    public ResponseResult getArticleById(String articleId) {
+    public ResponseResult getArticleById(String articleId) throws IOException {
         HttpServletRequest request = ResquestAndResponse.getRequest();
         HttpServletResponse response = ResquestAndResponse.getResponse();
         //查询出文章
@@ -274,14 +283,45 @@ public class TbArticleServiceImpl implements TbArticleService {
             return ResponseResult.failed("文章不存在");
         }
 
+
         //判断文章的状态,
         /*
          * 普通用户可以获取自己的草稿，和已发布、置顶的文章
          * */
         String state = tbArticle.getState();
         if (Constrants.Article.STATE_PULISH.equals(state) ||
-                Constrants.Article.STATE_TOP.equals(state) ||
-                Constrants.Article.STATE_DRAFT.equals(state)) {
+                Constrants.Article.STATE_TOP.equals(state) /*||
+                Constrants.Article.STATE_DRAFT.equals(state)*/) {
+
+
+            //添加缓存
+            // TODO: 2020/9/17  添加缓存
+            //正常的状态，可以增加阅读量
+            String viewCount = (String) redisUtil.get(Constrants.Article.KEY_ARTICLE_VIEW_COUNT + articleId);
+            if (TextUtils.isEmpty(viewCount)){
+                //如果redis不存在viewcount那么就添加一个
+                redisUtil.set(Constrants.Article.KEY_ARTICLE_VIEW_COUNT+articleId
+                        ,String.valueOf(tbArticle.getViewCount()+1));
+            }else {
+                //如果有值的话就更新到mysql 和  es中去
+                String newCount = (String) redisUtil.get(Constrants.Article.KEY_ARTICLE_VIEW_COUNT+ articleId);
+                int parseInt = Integer.parseInt(newCount);
+                int count = parseInt+1;
+                log.info("newcount"+newCount);
+//                Integer count = new Integer(newCount);
+                tbArticle.setViewCount(count);
+                articleMapper.updateById(tbArticle);
+                //再将新的浏览量替换掉原来的浏览量
+                redisUtil.set(Constrants.Article.KEY_ARTICLE_VIEW_COUNT+articleId,count+"");
+                // TODO: 2020/9/17 更新到es中去
+                UpdateRequest updateRequest = new UpdateRequest("ceshi1", articleId);
+                updateRequest.doc(JSON.toJSONString(tbArticle),XContentType.JSON);
+                UpdateResponse update = client.update(updateRequest, RequestOptions.DEFAULT);
+                System.out.println(update.status());
+            }
+            MdtoHtml mdtoHtml = new MdtoHtml();
+            String html = mdtoHtml.md_to_ht(tbArticle.getContent());
+            tbArticle.setContent(html);
             return ResponseResult.success("获取文章成功").setData(tbArticle);
         }
 

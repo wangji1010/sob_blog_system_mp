@@ -36,6 +36,7 @@ public interface Constrants {
         String TYPE_GIF_WITH_PREFIX = PREFIX+"gif";
     }
     interface Article{
+        String KEY_ARTICLE_VIEW_COUNT = "key_article_view_count";
         int TITLE_LENGTH_MAX = 128;
         int SUMMARY_MAX_LENGTH = 256;
         //删除0  1 已发布  2草稿  3置顶
@@ -43,6 +44,7 @@ public interface Constrants {
         String STATE_PULISH = "1";
         String STATE_DRAFT = "2";
         String STATE_TOP = "3";
+        String TYPE_MD = "1";
     }
 
     interface Commend{

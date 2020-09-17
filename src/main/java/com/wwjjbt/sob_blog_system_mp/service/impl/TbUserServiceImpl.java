@@ -375,7 +375,9 @@ public class TbUserServiceImpl implements TbUserService {
         HttpServletRequest request = ResquestAndResponse.getRequest();
         HttpServletResponse response = ResquestAndResponse.getResponse();
         String captchaKey = CookieUtils.getCookie(request, Constrants.User.LAST_CAPTCHA_ID);
+        log.info("captchaKey=="+captchaKey);
         String capchaValue = (String) redisUtil.get(Constrants.User.KEY_CAPTCHA_CONTENT + captchaKey);
+        log.info("capchaValue=="+capchaValue);
         if (TextUtils.isEmpty(capchaValue)) {
             return ResponseResult.failed("验证码过期");
         }

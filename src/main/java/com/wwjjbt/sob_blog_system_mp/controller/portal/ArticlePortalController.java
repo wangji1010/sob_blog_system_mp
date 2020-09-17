@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/portal/article")
@@ -56,7 +57,7 @@ public class ArticlePortalController {
     * 其他的获取需要管理权限
     * */
     @GetMapping("/{articleId}")
-    public ResponseResult getArticleDetail(@PathVariable("articleId")String articleId){
+    public ResponseResult getArticleDetail(@PathVariable("articleId")String articleId) throws IOException {
 
         return articleService.getArticleById(articleId);
 

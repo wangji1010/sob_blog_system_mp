@@ -24,7 +24,7 @@ public interface TbArticleService  {
 
     ResponseResult getListArticle(int page, int size, String keywords, String categoryId,String state);
 
-    ResponseResult getArticleById(String articleId);
+    ResponseResult getArticleById(String articleId) throws IOException;
 
     ResponseResult updateArticleById(String articleId, TbArticle article) throws IOException;
 
