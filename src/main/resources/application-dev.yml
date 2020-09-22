@@ -21,4 +21,4 @@ mybatis-plus:
 
 sob.blog.image.save-Path: C:\IDEA\sob_blog_system_mp\src\main\resources\static\images\
 sob.blog.image.max-size: 2097152  #2mb
-es.connection.host: 101.200.196.94
+es.connection.host: 127.0.0.1

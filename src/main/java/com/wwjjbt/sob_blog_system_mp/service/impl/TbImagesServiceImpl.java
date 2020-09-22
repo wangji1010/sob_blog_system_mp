@@ -66,8 +66,6 @@ public class TbImagesServiceImpl implements TbImagesService {
      * */
     @Override
     public ResponseResult upLoadImage(HttpServletRequest request,HttpServletResponse response, MultipartFile file) {
-
-
         //判空
         if (file == null) {
             return ResponseResult.failed("图片不能为空");
@@ -156,9 +154,6 @@ public class TbImagesServiceImpl implements TbImagesService {
 
         }
         return ResponseResult.failed("上传失败");
-
-
-
     }
 
     private String getType(String name, String contentType) {

@@ -114,6 +114,7 @@ public class TbCommentServiceImpl  implements TbCommentService {
         //参数检查
         QueryWrapper<TbComment> wrapper = new QueryWrapper<>();
         wrapper.eq("article_id",articleId);
+        wrapper.orderByDesc("create_time");
 
         //如果是第一页先从缓存中拿
         String cacheJson = (String) redisUtil.get(Constrants.Commend.KEY_COMMEND_FIRST_PAGE_CACHE + articleId);
