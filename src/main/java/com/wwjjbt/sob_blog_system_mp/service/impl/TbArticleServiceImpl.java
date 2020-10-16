@@ -119,7 +119,6 @@ public class TbArticleServiceImpl implements TbArticleService {
         }
 
         //发布文章的2种状态，草稿  和  发布
-
         String state = article.getState();
         if (!Constrants.Article.STATE_PULISH.equals(state) && !Constrants.Article.STATE_DRAFT.equals(state)) {
             //不支持该操作
@@ -160,7 +159,10 @@ public class TbArticleServiceImpl implements TbArticleService {
 
             article.setUserName(user.getUserName());
             article.setUserAvatar(user.getAvatar());
-
+            dealArticle(article, user);
+            //        保存
+            articleMapper.insert(article);
+            return ResponseResult.success("发布文章成功!");
         } else {
             //更新内容,如果已经是发布的或者已经是草稿了，则不能再为草稿
             TbArticle articleFromDb = articleMapper.selectById(articleId);
@@ -169,7 +171,13 @@ public class TbArticleServiceImpl implements TbArticleService {
                 //已经发布只能更新，不能保存草稿
                 return ResponseResult.failed("已发布文章不能保存为草稿");
             }
+            dealArticle(article, user);
+            articleMapper.updateById(article);
+            return ResponseResult.success("更新文章成功!");
         }
+    }
+
+    private void dealArticle(TbArticle article, TbUser user) throws IOException {
         article.setUpdateTime(new Date());
         article.setUserId(user.getId());
         //标签入库
@@ -183,14 +191,9 @@ public class TbArticleServiceImpl implements TbArticleService {
                     .id(article.getId()).source(JSON.toJSONString(article), XContentType.JSON));
             client.bulk(ceshi, RequestOptions.DEFAULT);
         }
-
-        //        保存
-        articleMapper.insert(article);
-
-        //返回结果
-        //如果要做程序自动保存草稿（如没30s保存一次，需要加上该id，否则会多次创建）
-        return ResponseResult.success(Constrants.Article.STATE_DRAFT.equals(state) ? "草稿发布成功" : "文章发表成功").setData(article.getId());
     }
+
+
     private void setupLabels(String labels) {
         //将标签分割开加入集合
         ArrayList<String> labelList = new ArrayList<>();

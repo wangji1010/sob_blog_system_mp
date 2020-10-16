@@ -15,7 +15,26 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 public class SwaggerConfig {
 
     //版本
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "2.0.0";
+
+    @Bean
+    public Docket LostApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(lostApiInfo())
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.wwjjbt.sob_blog_system_mp.controller.lost"))
+                .paths(PathSelectors.any()) // 可以根据url路径设置哪些请求加入文档，忽略哪些请求
+                .build()
+                .groupName("失物中心");
+    }
+
+    private ApiInfo lostApiInfo() {
+        return new ApiInfoBuilder()
+                .title("失物系统用户接口") //设置文档的标题
+                .description("分类接口,文章接口,帖子接口") // 设置文档的描述
+                .version(VERSION) // 设置文档的版本信息-> 1.0.0 Version information
+                .build();
+    }
 
     /**
      * 门户api，接口前缀：portal

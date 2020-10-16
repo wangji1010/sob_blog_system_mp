@@ -55,7 +55,7 @@ public class Mp {
 
 //        4、策略配置
         StrategyConfig strategy = new StrategyConfig();
-        strategy.setInclude("tb_refresh_token");//指定要映射的数据库表，可以写多个
+        strategy.setInclude("");//指定要映射的数据库表，可以写多个
         strategy.setNaming(NamingStrategy.underline_to_camel);//设置命名规则下划线转驼峰
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);//列名规则
         strategy.setEntityLombokModel(true);//是否生成lombok注解

@@ -532,12 +532,13 @@ public class TbUserServiceImpl implements TbUserService {
          * */
         TbUser userFromKey = checkUser(request, response);
         TbUser userFromDb = userMapper.selectById(userFromKey.getId());
-
+        log.info("userFromDb:"+userFromDb.getId()+"userId"+userId);
         if (userFromDb == null) {
             return ResponseResult.ACCOUNT_NOT_LOGIN("账号未登录");
         }
         //判断id是否一致
         if (!userFromDb.getId().equals(userId)) {
+
             return ResponseResult.PERMISSION_FORBID("无权限修改");
         }
         //可修改
