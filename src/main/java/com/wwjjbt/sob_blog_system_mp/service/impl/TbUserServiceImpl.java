@@ -287,7 +287,8 @@ public class TbUserServiceImpl implements TbUserService {
         用户注册
     * */
     @Override
-    public ResponseResult register(TbUser user, String emailCode, String captchaCode, HttpServletRequest request) {
+    public ResponseResult register(TbUser user, String emailCode
+            , String captchaCode, HttpServletRequest request) {
         if (TextUtils.isEmpty(user.getUserName())) {
             return ResponseResult.failed("用户名不能为空");
         }

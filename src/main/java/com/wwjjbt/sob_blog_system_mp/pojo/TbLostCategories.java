@@ -42,10 +42,12 @@ public class TbLostCategories implements Serializable {
     private String description;
 
     @ApiModelProperty(value = "排序")
-    private Integer order;
+    @TableField(value = "`order`")
+    private Integer order = 1;
 
+    @TableField(value = "`status`")
     @ApiModelProperty(value = "状态：0表示不使用，1表示正常")
-    private Integer status;
+    private Integer status = 1;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

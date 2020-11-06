@@ -41,6 +41,9 @@ public class TbLostArticle implements Serializable {
     @ApiModelProperty(value = "描述")
     private String summary;
 
+    @ApiModelProperty(value = "联系方式")
+    private String contact;
+
     @ApiModelProperty(value = "0 全部 1丢失 2拾到")
     private Integer type;
 
@@ -57,7 +60,7 @@ public class TbLostArticle implements Serializable {
     private String userName;
 
     @ApiModelProperty(value = "状态（1表示已发布，2表示草稿，3表示删除）")
-    private String state;
+    private Integer state;
 
     @ApiModelProperty(value = "浏览量")
     private Integer viewCount;

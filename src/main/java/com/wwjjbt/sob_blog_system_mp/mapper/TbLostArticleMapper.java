@@ -4,6 +4,8 @@ import com.wwjjbt.sob_blog_system_mp.pojo.TbLostArticle;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+
 /**
  * <p>
  *  Mapper 接口
@@ -15,4 +17,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TbLostArticleMapper extends BaseMapper<TbLostArticle> {
 
+    void updateByState(String id);
+
+    void updateRollback(String id);
+
+    ArrayList<TbLostArticle> getMineLost(String userId);
 }

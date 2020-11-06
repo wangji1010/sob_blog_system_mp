@@ -54,10 +54,10 @@ public class TbLostPost implements Serializable {
     private Integer viewCount;
 
     @ApiModelProperty(value = "状态（1表示已发布，2表示草稿，3表示删除）")
-    private String state;
+    private Integer state;
 
     @ApiModelProperty(value = "0普通  1置顶")
-    private String top;
+    private Integer top;
 
     @ApiModelProperty(value = "创建时间")
     @TableField(fill = FieldFill.INSERT)

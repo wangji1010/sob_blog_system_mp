@@ -104,6 +104,7 @@ public class TbArticleServiceImpl implements TbArticleService {
 
         //检查用户，获取用户对象
         TbUser user = userService.checkUser(request, response);
+
         //检查数据
         // title   类型
         String title = article.getTitle();

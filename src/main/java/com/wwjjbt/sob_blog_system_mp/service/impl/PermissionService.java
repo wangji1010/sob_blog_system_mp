@@ -1,6 +1,7 @@
 package com.wwjjbt.sob_blog_system_mp.service.impl;
 
 import com.wwjjbt.sob_blog_system_mp.pojo.TbUser;
+import com.wwjjbt.sob_blog_system_mp.response.ResponseResult;
 import com.wwjjbt.sob_blog_system_mp.service.TbUserService;
 import com.wwjjbt.sob_blog_system_mp.utils.Constrants;
 import com.wwjjbt.sob_blog_system_mp.utils.CookieUtils;
@@ -42,10 +43,22 @@ public class PermissionService {
             return true;
         }
         return false;
-
     }
 
+    /*
+    * 检查用户是否登录
+    * */
+    public boolean checkLogin(){
+        ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        HttpServletRequest request = requestAttributes.getRequest();
+        HttpServletResponse response = requestAttributes.getResponse();
+        //检查用户是否登录
+        TbUser tbUser = userService.checkUser(request, response);
 
-
-
+        System.out.println(tbUser);
+        if (tbUser==null){
+            return false;
+        }
+        return true;
+    }
 }

@@ -15,4 +15,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TbLostCategoriesMapper extends BaseMapper<TbLostCategories> {
 
+    TbLostCategories selectByName(String lName);
 }
